@@ -835,8 +835,16 @@ table.ledger {
 .hero-receipt-wrap {
   position: relative;
 }
+/* full-size rosette canvas, centered on the card — the drawing area extends
+   far past the card so the linework keeps its original scale; the hero's
+   overflow:hidden crops the spill */
 .hero-receipt-wrap .guilloche {
-  inset: -120px;
+  inset: -320px -360px;
+}
+@media (max-width: 880px) {
+  .hero-receipt-wrap .guilloche {
+    inset: -200px -160px;
+  }
 }
 .hero-receipt-wrap .receipt {
   position: relative;
