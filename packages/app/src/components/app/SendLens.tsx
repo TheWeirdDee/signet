@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { isAddress } from "viem";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { formatEther, isAddress } from "viem";
 import { useAccount, usePublicClient, useSignTypedData, useWalletClient } from "wagmi";
 import { useToast } from "@/components/Toast";
-import { contractsDeployed, SEPOLIA_CHAIN_ID, toUnits } from "@/lib/chain/contracts";
+import { contractsDeployed, deploymentFor, SEPOLIA_CHAIN_ID, toUnits } from "@/lib/chain/contracts";
 import { DEMO_ROWS, DEMO_TX_HASH, parseRows } from "@/lib/demo";
 import { runDisperse, type DisperseStage } from "@/lib/disperse";
 import { fmtUsd, shortAddress } from "@/lib/format";
@@ -30,6 +30,16 @@ const STAGE_LABEL: Record<Stage, string> = {
   done: "Sealed ✓",
 };
 
+/** The sealing ceremony, in order — rendered as a live checklist mid-flow. */
+const CEREMONY: { key: DisperseStage; label: string; hint: string }[] = [
+  { key: "approving", label: "Approve disperse operator", hint: "one-time ERC-7984 approval" },
+  { key: "encrypting", label: "Encrypt amounts client-side", hint: "euint64 · never cleartext onchain" },
+  { key: "dispersing", label: "Confidential disperse", hint: "one tx · TokenOps SDK" },
+  { key: "verifying", label: "Verify settlement integrity", hint: "transferred must equal allocated" },
+  { key: "disclosing", label: "Disclose receipts", hint: "compute rights → distributor" },
+  { key: "registering", label: "Seal receipts + sum-proof", hint: "verified onchain attach" },
+];
+
 export function SendLens({ demo }: { demo: boolean }) {
   const toast = useToast();
   const { address, isConnected, chainId } = useAccount();
@@ -39,12 +49,71 @@ export function SendLens({ demo }: { demo: boolean }) {
 
   const [text, setText] = useState(demo ? DEMO_ROWS : LOCAL_ROWS);
   const [stage, setStage] = useState<Stage>("idle");
+  const [reached, setReached] = useState<Set<DisperseStage>>(new Set());
+  const [feeWei, setFeeWei] = useState<bigint | null>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
   const [note, setNote] = useState<React.ReactNode>(
     "One confidential disperse. The declared total is committed publicly; individual amounts stay encrypted.",
   );
 
   const rows = useMemo(() => parseRows(text), [text]);
   const total = useMemo(() => rows.reduce((a, r) => a + r.amount, 0), [rows]);
+  const dep = deploymentFor(chainId);
+
+  // fee preview: the TokenOps singleton charges a per-recipient ETH gas fee
+  // in direct mode — surface it before the user commits
+  useEffect(() => {
+    if (demo || chainId !== SEPOLIA_CHAIN_ID || !publicClient || !dep) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const cfg = (await publicClient.readContract({
+          address: dep.Disperse,
+          abi: [
+            {
+              type: "function",
+              name: "feeConfig",
+              stateMutability: "view",
+              inputs: [],
+              outputs: [
+                { name: "gasFeeEnabled", type: "bool" },
+                { name: "tokenFeeEnabled", type: "bool" },
+                { name: "defaultGasFee", type: "uint96" },
+                { name: "defaultTokenFee", type: "uint16" },
+              ],
+            },
+          ] as const,
+          functionName: "feeConfig",
+        })) as readonly [boolean, boolean, bigint, number];
+        if (!cancelled) setFeeWei(cfg[0] ? cfg[2] : 0n);
+      } catch {
+        if (!cancelled) setFeeWei(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [demo, chainId, publicClient]);
+
+  function importCsv(file: File) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const raw = String(reader.result ?? "")
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+        .filter((l) => l && !/^(address|recipient)/i.test(l)) // drop a header row
+        .map((l) => l.replace(/[;\t]/g, ","))
+        .join("\n");
+      if (raw) {
+        setText(raw);
+        toast(`Imported ${raw.split("\n").length} rows from ${file.name}`);
+      } else {
+        toast("That file had no usable rows — expected `address, amount` lines");
+      }
+    };
+    reader.readAsText(file);
+  }
 
   async function disperseDemo() {
     setStage("encrypting");
@@ -78,6 +147,7 @@ export function SendLens({ demo }: { demo: boolean }) {
     }
 
     try {
+      setReached(new Set());
       const outcome = await runDisperse({
         chainId,
         account: address,
@@ -88,7 +158,15 @@ export function SendLens({ demo }: { demo: boolean }) {
         signTypedData: (args) =>
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           signTypedDataAsync(args as any),
-        onStage: (s) => setStage(s),
+        onStage: (s) => {
+          setStage(s);
+          setReached((prev) => new Set(prev).add(s));
+        },
+      });
+      setReached((prev) => {
+        const all = new Set(prev);
+        CEREMONY.forEach((c) => all.add(c.key));
+        return all;
       });
 
       setStage("done");
@@ -145,9 +223,40 @@ export function SendLens({ demo }: { demo: boolean }) {
       </div>
       <div className="row-split">
         <div className="card">
-          <label className="fld" htmlFor="rlist">
-            Recipients · address, amount (USD)
-          </label>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "baseline",
+              gap: 12,
+            }}
+          >
+            <label className="fld" htmlFor="rlist">
+              Recipients · address, amount (USD)
+            </label>
+            {!demo && (
+              <>
+                <input
+                  ref={fileInput}
+                  type="file"
+                  accept=".csv,.txt"
+                  style={{ display: "none" }}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) importCsv(f);
+                    e.target.value = "";
+                  }}
+                />
+                <button
+                  className="btn btn-ghost"
+                  style={{ padding: "7px 12px", fontSize: 11 }}
+                  onClick={() => fileInput.current?.click()}
+                >
+                  Import CSV
+                </button>
+              </>
+            )}
+          </div>
           <textarea
             id="rlist"
             spellCheck={false}
@@ -175,6 +284,15 @@ export function SendLens({ demo }: { demo: boolean }) {
               {demo ? "Sepolia" : chainId === SEPOLIA_CHAIN_ID ? "Sepolia" : "Localhost · 31337"}
             </span>
           </div>
+          {!demo && chainId === SEPOLIA_CHAIN_ID && feeWei !== null && (
+            <div className="rr">
+              <span className="k">Disperse fee</span>
+              <span className="s">
+                {formatEther(feeWei * BigInt(Math.max(rows.length, 1)))} ETH · {rows.length} ×{" "}
+                {formatEther(feeWei)}
+              </span>
+            </div>
+          )}
           <div className="tot">
             <span className="l">Declared total</span>
             <span className="v">
@@ -190,6 +308,36 @@ export function SendLens({ demo }: { demo: boolean }) {
           >
             {STAGE_LABEL[stage]}
           </button>
+          {/* the sealing ceremony — live walkthrough of what's happening */}
+          {!demo && (busy || (stage === "done" && reached.size > 0)) && (
+            <div style={{ marginTop: 10 }}>
+              {CEREMONY.map((c) => {
+                const isCurrent = stage === c.key;
+                const isDone = reached.has(c.key) && !isCurrent;
+                return (
+                  <div
+                    className="rr"
+                    key={c.key}
+                    style={{ padding: "8px 0", opacity: isDone || isCurrent ? 1 : 0.45 }}
+                  >
+                    <span style={{ fontSize: 13, color: "var(--ink-soft)" }}>
+                      <span
+                        className="mono"
+                        style={{
+                          marginRight: 8,
+                          color: isDone ? "var(--ok)" : isCurrent ? "var(--wax)" : "var(--muted)",
+                        }}
+                      >
+                        {isDone ? "✓" : isCurrent ? "●" : "○"}
+                      </span>
+                      {c.label}
+                    </span>
+                    <span className="s">{c.hint}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
           {!demo && !isConnected && (
             <div className="note">
               Connect a wallet to disperse — or{" "}

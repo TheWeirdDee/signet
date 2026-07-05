@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { type Connector, useAccount, useConnect, useDisconnect, useSwitchChain } from "wagmi";
 import { hardhat, sepolia } from "wagmi/chains";
 import { useToast } from "@/components/Toast";
@@ -70,7 +71,11 @@ export function ConnectButton() {
       <button className="btn" onClick={() => setOpen(true)}>
         Connect wallet
       </button>
-      {open && (
+      {/* portal to <body>: the sticky header's backdrop-filter would otherwise
+          become the containing block for position:fixed and pin the modal to
+          the header instead of the viewport center */}
+      {open &&
+        createPortal(
         <div
           className="modal-overlay"
           role="dialog"
@@ -134,7 +139,8 @@ export function ConnectButton() {
               Every detected wallet is listed — nothing is auto-selected.
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   );
