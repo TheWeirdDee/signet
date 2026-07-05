@@ -25,8 +25,10 @@ Operator / verified issuer: `0x97f32Ba0b4DD5c274DFD9C2A7e6Aa403a9B7dE8d`
 Handle-disclosure tx (singleton → distributor compute ACL):
 [`0xbbdf5c7e…f86f75`](https://sepolia.etherscan.io/tx/0xbbdf5c7e6921bce9d19cef3b84fb38bd355c8bbc199a0f2c49165a2575f86f75)
 
-**Shareable proof link:** `/p/0` on the deployed domain
-(locally: `http://localhost:3000/p/0`).
+**Shareable proof link (live):** https://signet-app-two.vercel.app/p/0
+
+**Live app:** https://signet-app-two.vercel.app · demo mode:
+https://signet-app-two.vercel.app/app?demo=true
 
 ## What the round-trip verified against the REAL relayer/KMS
 

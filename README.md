@@ -6,7 +6,9 @@ Signet is a confidential token-distribution dApp on the [Zama Protocol](https://
 
 Built for the **Zama Developer Program · Season 3 · Special Bounty Track × TokenOps**. Deployed on Sepolia.
 
-> **Live proof it's real:** every claim below is backed by onchain transactions — see [SUBMISSION-ARTIFACTS.md](SUBMISSION-ARTIFACTS.md) for the deployed contracts, a real confidential disperse, a real selective-disclosure proof, and a shareable `/p/0` link a stranger can verify.
+> **Live demo:** https://signet-app-two.vercel.app — wallet-free walkthrough at [`/app?demo=true`](https://signet-app-two.vercel.app/app?demo=true), and a real onchain proof a stranger can verify at [`/p/0`](https://signet-app-two.vercel.app/p/0).
+>
+> **Live proof it's real:** every claim below is backed by onchain transactions — see [SUBMISSION-ARTIFACTS.md](SUBMISSION-ARTIFACTS.md) for the deployed contracts, a real confidential disperse, and a real selective-disclosure proof.
 
 ---
 
