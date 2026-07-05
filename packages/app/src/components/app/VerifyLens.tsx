@@ -383,7 +383,7 @@ function Shell({
       <PanelHead />
       {selector}
       {head}
-      <div className="card" style={{ marginTop: 16, padding: "6px 8px" }}>
+      <div className="card table-scroll" style={{ marginTop: 16, padding: "6px 8px" }}>
         <table className="ledger">
           <thead>
             <tr>

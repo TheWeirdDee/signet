@@ -1106,6 +1106,87 @@ section.land {
   padding-top: 3px;
 }
 
+/* ---------- operator walkthrough ---------- */
+.wt-list {
+  list-style: none;
+  max-width: 760px;
+}
+.wt-item {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 20px;
+  padding: 26px 0;
+  border-top: 1px solid var(--line);
+}
+.wt-item .num {
+  font-family: var(--display);
+  font-size: 42px;
+  line-height: 1;
+  color: var(--wax);
+  opacity: 0.85;
+}
+.wt-item h4 {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 23px;
+  margin-bottom: 6px;
+}
+.wt-item p {
+  font-size: 15.5px;
+  color: var(--ink-soft);
+  max-width: 58ch;
+}
+.wt-hint {
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 10px;
+}
+@media (max-width: 560px) {
+  .wt-item {
+    grid-template-columns: 48px 1fr;
+    gap: 14px;
+  }
+  .wt-item .num {
+    font-size: 30px;
+  }
+}
+.ceremony-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 26px;
+  padding-top: 22px;
+  border-top: 1px dashed var(--line-2);
+}
+.ceremony-strip .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  border: 1px solid var(--line-2);
+  border-radius: 2px;
+  padding: 7px 10px;
+  background: var(--paper);
+}
+.ceremony-strip .chip i {
+  font-style: normal;
+  font-size: 9.5px;
+  color: var(--paper);
+  background: var(--wax);
+  border-radius: 50%;
+  width: 15px;
+  height: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .band {
   background: var(--ink);
   color: var(--paper);
@@ -1166,6 +1247,67 @@ section.land {
 @keyframes draw {
   to {
     stroke-dashoffset: 0;
+  }
+}
+
+/* ---------- mobile ---------- */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+@media (max-width: 620px) {
+  .bar {
+    height: auto;
+    min-height: 56px;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 0;
+  }
+  .who-pill {
+    display: none;
+  }
+  .lens {
+    width: 100%;
+    display: flex;
+  }
+  .lens button {
+    flex: 1;
+    padding: 10px 8px;
+    font-size: 11px;
+  }
+  .lens button .sub {
+    font-size: 9px;
+  }
+  .hero {
+    padding: 56px 0 48px;
+  }
+  section.land {
+    padding: 54px 0;
+  }
+  .p-head h2 {
+    font-size: 25px;
+  }
+  .tot .v {
+    font-size: 22px;
+  }
+  .slot {
+    min-width: 128px;
+  }
+  .receipt {
+    padding: 20px 16px;
+  }
+  .card {
+    padding: 18px 16px;
+  }
+  .proofcard .stamp {
+    width: 64px;
+    height: 64px;
+    top: 10px;
+    right: 10px;
+  }
+  .hero-cta .btn {
+    width: 100%;
+    justify-content: center;
   }
 }
 

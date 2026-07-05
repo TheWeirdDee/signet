@@ -1,5 +1,6 @@
 "use client";
 
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { useState } from "react";
 import { ConnectButton } from "@/components/ConnectButton";
@@ -13,6 +14,7 @@ const WHO: Record<View, string> = { send: "Operator", claim: "Recipient", verify
 
 export function AppShell({ demo }: { demo: boolean }) {
   const [view, setView] = useState<View>("send");
+  const reduce = useReducedMotion();
 
   return (
     <>
@@ -57,21 +59,19 @@ export function AppShell({ demo }: { demo: boolean }) {
       </div>
 
       <main className="wrap-app app-main">
-        {view === "send" && (
-          <section className="panel">
-            <SendLens demo={demo} />
-          </section>
-        )}
-        {view === "claim" && (
-          <section className="panel">
-            <ClaimLens demo={demo} />
-          </section>
-        )}
-        {view === "verify" && (
-          <section className="panel">
-            <VerifyLens demo={demo} />
-          </section>
-        )}
+        <AnimatePresence mode="wait">
+          <motion.section
+            key={view}
+            initial={reduce ? false : { opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reduce ? undefined : { opacity: 0, y: -8 }}
+            transition={{ duration: 0.28, ease: [0.22, 0.61, 0.36, 1] }}
+          >
+            {view === "send" && <SendLens demo={demo} />}
+            {view === "claim" && <ClaimLens demo={demo} />}
+            {view === "verify" && <VerifyLens demo={demo} />}
+          </motion.section>
+        </AnimatePresence>
       </main>
     </>
   );
