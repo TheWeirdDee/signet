@@ -1,0 +1,8 @@
+{
+  "chainId": 31337,
+  "network": "localhost",
+  "SignetToken": "0x0B306BF915C4d645ff596e518fAf3F9669b97016",
+  "SignetDistributor": "0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1",
+  "Disperse": "0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE",
+  "deployBlock": 0
+}

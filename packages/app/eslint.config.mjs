@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // generated third-party bundle (scripts/build-zama-web.mjs output)
+    "public/zama/**",
   ]),
 ]);
 

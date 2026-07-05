@@ -1,0 +1,181 @@
+[
+  {
+    "inputs": [],
+    "name": "ContractNotAllowed",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "EmptyBatch",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "HandleNotAllowed",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "LengthMismatch",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "handle",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      }
+    ],
+    "name": "SenderNotAllowedToUseHandle",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ZamaProtocolUnsupported",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address[]",
+        "name": "recipients",
+        "type": "address[]"
+      },
+      {
+        "indexed": false,
+        "internalType": "euint64[]",
+        "name": "requested",
+        "type": "bytes32[]"
+      },
+      {
+        "indexed": false,
+        "internalType": "euint64[]",
+        "name": "transferred",
+        "type": "bytes32[]"
+      }
+    ],
+    "name": "DirectDistribution",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "discloser",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "party",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "euint64[]",
+        "name": "handles",
+        "type": "bytes32[]"
+      }
+    ],
+    "name": "HandlesDisclosedToParty",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "euint64[]",
+        "name": "handles",
+        "type": "bytes32[]"
+      },
+      {
+        "internalType": "address",
+        "name": "party",
+        "type": "address"
+      }
+    ],
+    "name": "batchDiscloseHandlesToParty",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "confidentialProtocolId",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "euint64",
+        "name": "handle",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "party",
+        "type": "address"
+      }
+    ],
+    "name": "discloseHandleToParty",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "address[]",
+        "name": "recipients",
+        "type": "address[]"
+      },
+      {
+        "internalType": "externalEuint64[]",
+        "name": "encryptedAmounts",
+        "type": "bytes32[]"
+      },
+      {
+        "internalType": "bytes",
+        "name": "inputProof",
+        "type": "bytes"
+      }
+    ],
+    "name": "disperseConfidentialTokenDirect",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  }
+]

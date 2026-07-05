@@ -1,0 +1,8 @@
+{
+  "chainId": 11155111,
+  "network": "sepolia",
+  "SignetToken": "0x46fEF55EcA3CeA2C1C374c5c30a6CFF7521c3150",
+  "SignetDistributor": "0xa73723023a25fB400A153AE82F7A87B93d305f49",
+  "Disperse": "0x710dD9885Cc9986EfD234E7719483147a6d8DBb4",
+  "deployBlock": 11200000
+}

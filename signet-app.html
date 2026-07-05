@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Signet — App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#E7E3D6; --paper-2:#DED9C9; --paper-3:#D3CDBA;
+    --ink:#17231C; --ink-soft:#3A4038; --muted:#7C7A6C;
+    --wax:#8A2A3B; --wax-deep:#6E1F2E; --gilt:#9C7C3C; --ok:#3E6B4C;
+    --line:rgba(23,35,28,.14); --line-2:rgba(23,35,28,.26);
+    --display:"Libre Caslon Display",Georgia,serif;
+    --body:"Hanken Grotesk",system-ui,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  ::selection{background:var(--wax);color:var(--paper)}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 24px}
+  .mono{font-family:var(--mono)}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+
+  /* demo banner */
+  .demo-flag{background:var(--ink);color:var(--paper);text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:7px}
+  .demo-flag b{color:var(--gilt);font-weight:600}
+
+  header{border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(231,227,214,.9);backdrop-filter:blur(8px);z-index:30}
+  .bar{display:flex;align-items:center;justify-content:space-between;height:60px}
+  .brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-size:21px}
+  .brand svg{width:26px;height:26px}
+  .who-pill{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--ink-soft);border:1px solid var(--line-2);border-radius:2px;padding:7px 12px;background:var(--paper)}
+  .who-pill b{color:var(--wax)}
+
+  /* lens tabs — the core control */
+  .lens{display:flex;gap:0;border:1px solid var(--line-2);border-radius:3px;overflow:hidden;background:var(--paper);width:max-content;margin:0 auto}
+  .lens button{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;background:transparent;border:0;color:var(--muted);padding:11px 22px;cursor:pointer;transition:all .18s ease;border-right:1px solid var(--line-2);position:relative}
+  .lens button:last-child{border-right:0}
+  .lens button .sub{display:block;font-family:var(--body);font-size:10px;letter-spacing:.02em;text-transform:none;color:var(--muted);margin-top:2px;opacity:.8}
+  .lens button.active{background:var(--ink);color:var(--paper)}
+  .lens button.active .sub{color:rgba(231,227,214,.7)}
+  .lens-wrap{padding:26px 0 8px}
+
+  main{padding:14px 0 80px;min-height:60vh}
+  .panel{display:none;animation:fade .35s ease}
+  .panel.on{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .p-head{max-width:60ch;margin-bottom:22px}
+  .p-head h2{font-family:var(--display);font-weight:400;font-size:30px;letter-spacing:-.01em;margin:8px 0 8px}
+  .p-head p{color:var(--ink-soft);font-size:16px}
+
+  .card{background:var(--paper);border:1px solid var(--line-2);border-radius:4px;padding:24px;box-shadow:0 1px 0 rgba(255,255,255,.5) inset}
+  .card + .card{margin-top:18px}
+  .row-split{display:grid;grid-template-columns:1.3fr .7fr;gap:20px}
+  @media(max-width:760px){.row-split{grid-template-columns:1fr}}
+
+  label.fld{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  textarea,input,select{width:100%;font-family:var(--mono);font-size:13px;color:var(--ink);background:var(--paper-2);border:1px solid var(--line-2);border-radius:3px;padding:12px 13px;resize:vertical}
+  textarea{min-height:150px;line-height:1.7}
+  textarea:focus,input:focus,select:focus{outline:2px solid var(--wax);outline-offset:1px}
+
+  .tot{display:flex;justify-content:space-between;align-items:baseline;padding:16px 0;border-top:1px dashed var(--line-2);margin-top:16px}
+  .tot .l{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .tot .v{font-family:var(--mono);font-size:26px;font-weight:600;color:var(--ink)}
+  .tot .v small{font-size:13px;color:var(--muted)}
+
+  .btn{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;background:var(--ink);color:var(--paper);border:1px solid var(--ink);padding:13px 20px;border-radius:2px;cursor:pointer;transition:all .16s ease;display:inline-flex;gap:8px;align-items:center}
+  .btn:hover{background:var(--wax-deep);border-color:var(--wax-deep)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn-wax{background:var(--wax);border-color:var(--wax)}
+  .btn-wax:hover{background:var(--wax-deep);border-color:var(--wax-deep)}
+  .btn-ghost{background:transparent;color:var(--ink);border:1px solid var(--line-2)}
+  .btn-ghost:hover{background:var(--paper-2);border-color:var(--ink)}
+
+  .note{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.03em;line-height:1.6;margin-top:14px}
+  .note b{color:var(--ink-soft)}
+
+  /* seal glyph */
+  .seal{width:56px;height:56px}
+  .seal-lg{width:104px;height:104px}
+
+  /* slot / redaction */
+  .slot{position:relative;height:38px;min-width:150px;border-radius:3px;overflow:hidden;background:var(--paper-3);box-shadow:inset 0 2px 4px rgba(23,35,28,.28),inset 0 -1px 0 rgba(255,255,255,.35);display:inline-flex}
+  .slot .cover{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:4px;background:var(--ink);transition:transform .55s cubic-bezier(.6,.02,.1,1),opacity .4s ease}
+  .slot .cover i{width:9px;height:9px;border-radius:50%;background:var(--paper);opacity:.5}
+  .slot .val{flex:1;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:600;font-size:17px;color:var(--ink)}
+  .slot.open .cover{transform:translateY(-102%);opacity:0}
+
+  /* claim receipt */
+  .receipt{position:relative;border:1px solid var(--line-2);border-radius:4px;padding:26px;background:var(--paper)}
+  .receipt::before{content:"";position:absolute;inset:7px;border:1px solid var(--line);border-radius:2px;pointer-events:none}
+  .rr{display:flex;justify-content:space-between;align-items:center;padding:15px 0;border-bottom:1px dotted var(--line-2)}
+  .rr:last-child{border-bottom:0}
+  .rr .k{font-size:14px;color:var(--ink-soft)}
+  .rr .s{font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+  /* prove */
+  .disclose{display:grid;grid-template-columns:1fr;gap:12px}
+  .opt{display:flex;align-items:center;gap:12px;border:1px solid var(--line-2);border-radius:3px;padding:13px 15px;cursor:pointer;background:var(--paper);transition:all .15s ease}
+  .opt:hover{background:var(--paper-2)}
+  .opt.sel{border-color:var(--wax);background:var(--paper-2)}
+  .opt .dot{width:15px;height:15px;border-radius:50%;border:1px solid var(--line-2);flex:0 0 auto;position:relative}
+  .opt.sel .dot{border-color:var(--wax)}
+  .opt.sel .dot::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--wax)}
+  .opt .t{font-size:14.5px}
+  .opt .t small{display:block;font-family:var(--mono);font-size:10.5px;color:var(--muted);letter-spacing:.02em;margin-top:2px}
+
+  /* proof card + stamp animation */
+  .proofcard{position:relative;border:1px solid var(--line-2);border-radius:4px;padding:24px;background:var(--paper);overflow:hidden;min-height:210px}
+  .proofcard .ptitle{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .pred{font-family:var(--mono);font-size:14px;background:var(--paper-2);border:1px solid var(--line-2);border-radius:3px;padding:13px 15px;margin:12px 0;display:flex;justify-content:space-between;align-items:center}
+  .pred .yes{color:var(--wax);font-weight:600}
+  .pred .redact{background:var(--ink);color:var(--ink);border-radius:2px;padding:0 8px;user-select:none}
+  .stamp{position:absolute;top:18px;right:18px;width:96px;height:96px;opacity:0;transform:scale(2.4) rotate(-24deg);transform-origin:center;pointer-events:none}
+  .stamp.hit{animation:press .6s cubic-bezier(.34,1.3,.64,1) forwards}
+  @keyframes press{
+    0%{opacity:0;transform:scale(2.4) rotate(-24deg)}
+    55%{opacity:1;transform:scale(.82) rotate(6deg)}
+    72%{transform:scale(1.05) rotate(6deg)}
+    100%{opacity:.95;transform:scale(1) rotate(8deg)}
+  }
+  .empty-proof{display:flex;flex-direction:column;align-items:center;justify-content:center;height:180px;text-align:center;color:var(--muted)}
+  .empty-proof .seal{opacity:.32;margin-bottom:12px}
+
+  /* verify ledger */
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line-2)}
+  th.r,td.r{text-align:right}
+  td{padding:12px;border-bottom:1px dotted var(--line);font-family:var(--mono);font-size:12.5px;color:var(--ink-soft)}
+  .bar-redact{display:inline-block;height:14px;width:74px;background:var(--ink);border-radius:2px;opacity:.85;vertical-align:middle}
+  .agg{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
+  @media(max-width:640px){.agg{grid-template-columns:1fr}}
+  .stat{border:1px solid var(--line-2);border-radius:4px;padding:16px 18px;background:var(--paper)}
+  .stat .l{font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+  .stat .v{font-family:var(--mono);font-size:24px;font-weight:600;margin-top:6px}
+  .badge{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ok);border:1px solid var(--ok);border-radius:2px;padding:8px 12px;margin-top:4px}
+  .badge .d{width:7px;height:7px;border-radius:50%;background:var(--ok)}
+
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:12px;letter-spacing:.04em;padding:13px 20px;border-radius:3px;opacity:0;transition:all .3s ease;z-index:60;max-width:90vw}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  :focus-visible{outline:2px solid var(--wax);outline-offset:2px}
+  @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="seal" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="46" fill="var(--wax)"/>
+    <circle cx="50" cy="50" r="46" fill="none" stroke="var(--wax-deep)" stroke-width="1.5"/>
+    <circle cx="50" cy="50" r="38" fill="none" stroke="var(--gilt)" stroke-width="1" opacity=".8"/>
+    <circle cx="50" cy="50" r="34" fill="none" stroke="var(--wax-deep)" stroke-width="1" opacity=".6"/>
+    <text x="50" y="63" text-anchor="middle" font-family="Libre Caslon Display, serif" font-size="42" fill="var(--paper)">S</text>
+  </symbol>
+</defs></svg>
+
+<div class="demo-flag">Demo mode — <b>no wallet needed</b> · every value is mocked to show the flow</div>
+
+<header>
+  <div class="wrap bar">
+    <div class="brand"><svg aria-hidden="true"><use href="#seal"/></svg>Signet</div>
+    <div class="who-pill" id="whoPill">viewing as · <b id="whoName">Operator</b></div>
+  </div>
+</header>
+
+<div class="lens-wrap">
+  <div class="lens" role="tablist" aria-label="View">
+    <button class="active" data-view="send" role="tab">Send<span class="sub">operator</span></button>
+    <button data-view="claim" role="tab">Claim<span class="sub">recipient</span></button>
+    <button data-view="verify" role="tab">Verify<span class="sub">public</span></button>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <!-- ============ SEND ============ -->
+  <section class="panel on" id="send">
+    <div class="p-head">
+      <div class="eyebrow">01 · Send</div>
+      <h2>Pay everyone at once — amounts sealed</h2>
+      <p>Paste recipients and amounts, or import a CSV. One confidential disperse through the TokenOps SDK. Nothing here lands onchain in cleartext except the addresses.</p>
+    </div>
+    <div class="row-split">
+      <div class="card">
+        <label class="fld" for="rlist">Recipients · address, amount (USD)</label>
+        <textarea id="rlist" spellcheck="false">0x4A9f…Meridian grant  , 2350
+0x71c2…contributor A     , 1800
+0x0eD5…contributor B     , 3200
+0x9Bb1…contributor C     , 1250
+0xF33a…contributor D     , 2600
+0x1D8e…contributor E     , 900</textarea>
+        <div class="note"><b>ERC-7984:</b> each amount is encrypted client-side into a euint64 before it ever touches the chain. Addresses are public — Signet does not hide the recipient list.</div>
+      </div>
+      <div class="card">
+        <label class="fld">Distribution</label>
+        <div class="rr"><span class="k">Recipients</span><span class="mono" id="rc">6</span></div>
+        <div class="rr"><span class="k">Token</span><span class="s">cUSDT · ERC-7984</span></div>
+        <div class="rr"><span class="k">Network</span><span class="s">Sepolia</span></div>
+        <div class="tot"><span class="l">Declared total</span><span class="v" id="total">$12,100<small>.00</small></span></div>
+        <button class="btn btn-wax" id="disperse" style="width:100%;justify-content:center;margin-top:6px">Seal &amp; disperse</button>
+        <div class="note" id="sendNote">One transaction. The declared total is committed publicly; individual amounts stay encrypted.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CLAIM ============ -->
+  <section class="panel" id="claim">
+    <div class="p-head">
+      <div class="eyebrow">02 · Claim</div>
+      <h2>Unseal your slice — then prove things with it</h2>
+      <p>Your allocation surfaced automatically. Sign once to decrypt it. Then disclose a fact about it to anyone, without revealing the number.</p>
+    </div>
+    <div class="row-split">
+      <!-- receipt -->
+      <div class="receipt">
+        <div class="rr"><span class="ptitle mono" style="font-size:11px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase">Proof of Receipt · № 047</span><span class="s">sepolia</span></div>
+        <div class="rr">
+          <div><div class="k">Your allocation</div><div class="s">euint64 · encrypted onchain</div></div>
+          <div class="slot" id="claimSlot"><div class="val">$2,350.00</div><div class="cover"><i></i><i></i><i></i></div></div>
+        </div>
+        <div class="rr">
+          <div><div class="k">Issued by</div><div class="s">Meridian Grants Fund</div></div>
+          <div class="mono" style="font-size:11px;color:var(--ok)">✓ verified</div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px">
+          <div style="display:flex;gap:10px;align-items:center">
+            <svg class="seal" style="width:38px;height:38px" aria-hidden="true"><use href="#seal"/></svg>
+            <span class="s" style="font-family:var(--mono);font-size:10px;letter-spacing:.05em;color:var(--muted);text-transform:uppercase">sealed with the<br>fund's signet</span>
+          </div>
+          <button class="btn" id="signDecrypt">Sign to decrypt</button>
+        </div>
+        <div class="note" id="claimNote">EIP-712 signature — signed <b>once per session</b>, then cached. No repeated popups.</div>
+      </div>
+
+      <!-- prove -->
+      <div class="card" id="proveCard" style="opacity:.5;pointer-events:none">
+        <label class="fld">Disclose a fact — to whom?</label>
+        <input id="verifier" value="Northwind Lending" spellcheck="false" style="margin-bottom:14px"/>
+        <div class="disclose" id="opts">
+          <div class="opt sel" data-p="ge"><span class="dot"></span><span class="t">Allocation is at least $2,000<small>FHE.ge(allocation, 2000) → ebool</small></span></div>
+          <div class="opt" data-p="issuer"><span class="dot"></span><span class="t">Paid by a verified fund<small>issuer attestation · onchain</small></span></div>
+          <div class="opt" data-p="both"><span class="dot"></span><span class="t">Both of the above<small>threshold + verified issuer</small></span></div>
+        </div>
+        <button class="btn btn-wax" id="sealProof" style="width:100%;justify-content:center;margin-top:16px">Seal the proof</button>
+        <div class="note">The verifier is granted rights to decrypt only the resulting boolean. Your amount is never in their reach.</div>
+      </div>
+    </div>
+
+    <!-- generated proof -->
+    <div class="card" id="proofOut" style="margin-top:18px;display:none">
+      <div class="row-split" style="grid-template-columns:1fr .8fr;align-items:center">
+        <div class="proofcard" id="proofcard">
+          <div class="ptitle" id="proofFor">Disclosure · to Northwind Lending</div>
+          <div id="predList"></div>
+          <div class="note" style="margin-top:4px">exact amount <span class="mono" style="color:var(--ink);background:var(--ink);border-radius:2px;padding:0 8px">▓▓▓▓▓</span> — never decrypted by verifier</div>
+          <svg class="stamp" id="stamp" aria-hidden="true"><use href="#seal"/></svg>
+        </div>
+        <div>
+          <div class="note" style="margin-top:0"><b>What just happened:</b> the contract compared your encrypted balance to the threshold <b>on the ciphertext</b>, produced an encrypted boolean, and scoped its decryption to the verifier alone.</div>
+          <button class="btn btn-ghost" id="copyProof" style="margin-top:14px">Copy shareable link</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ VERIFY ============ -->
+  <section class="panel" id="verify">
+    <div class="p-head">
+      <div class="eyebrow">03 · Verify</div>
+      <h2>Proof the fund paid out honestly</h2>
+      <p>Anyone can confirm the declared total equals the distributed total — proven under encryption — without seeing a single individual amount.</p>
+    </div>
+    <div class="agg">
+      <div class="stat"><div class="l">Recipients</div><div class="v">6</div></div>
+      <div class="stat"><div class="l">Declared total</div><div class="v">$12,100</div></div>
+      <div class="stat"><div class="l">Distributed total</div><div class="v">$12,100</div></div>
+    </div>
+    <div class="badge"><span class="d"></span> declared = distributed · verified under FHE encryption</div>
+    <div class="card" style="margin-top:16px;padding:6px 8px">
+      <table>
+        <thead><tr><th>#</th><th>Recipient</th><th>Allocation</th><th class="r">Claimed</th></tr></thead>
+        <tbody>
+          <tr><td>01</td><td>0x4A9f…</td><td><span class="bar-redact"></span></td><td class="r">✓</td></tr>
+          <tr><td>02</td><td>0x71c2…</td><td><span class="bar-redact" style="width:58px"></span></td><td class="r">✓</td></tr>
+          <tr><td>03</td><td>0x0eD5…</td><td><span class="bar-redact" style="width:88px"></span></td><td class="r">—</td></tr>
+          <tr><td>04</td><td>0x9Bb1…</td><td><span class="bar-redact" style="width:66px"></span></td><td class="r">✓</td></tr>
+          <tr><td>05</td><td>0xF33a…</td><td><span class="bar-redact" style="width:80px"></span></td><td class="r">✓</td></tr>
+          <tr><td>06</td><td>0x1D8e…</td><td><span class="bar-redact" style="width:52px"></span></td><td class="r">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note">The redaction bars are not decorative — each row's amount is a euint64 no observer holds the key to. The bar widths are randomized; they leak nothing about the values.</div>
+  </section>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const $=s=>document.querySelector(s);
+  const $$=s=>[...document.querySelectorAll(s)];
+  const toast=(m)=>{const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2600);};
+
+  // ---- lens switching ----
+  const names={send:'Operator',claim:'Recipient',verify:'Public'};
+  $$('.lens button').forEach(b=>b.addEventListener('click',()=>{
+    $$('.lens button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    const v=b.dataset.view;
+    $$('.panel').forEach(p=>p.classList.remove('on'));
+    $('#'+v).classList.add('on');
+    $('#whoName').textContent=names[v];
+  }));
+
+  // ---- SEND: live total ----
+  const parseRows=()=>$('#rlist').value.split('\n').map(l=>l.trim()).filter(Boolean)
+    .map(l=>{const m=l.split(',');return parseFloat((m[m.length-1]||'').replace(/[^0-9.]/g,''))||0;});
+  const fmt=n=>'$'+n.toLocaleString('en-US');
+  function recalc(){
+    const amts=parseRows(); const sum=amts.reduce((a,b)=>a+b,0);
+    $('#rc').textContent=amts.length;
+    $('#total').innerHTML=fmt(sum)+'<small>.00</small>';
+  }
+  $('#rlist').addEventListener('input',recalc); recalc();
+
+  $('#disperse').addEventListener('click',function(){
+    this.disabled=true; this.textContent='Encrypting amounts…';
+    setTimeout(()=>{this.textContent='Sealing distribution…';},900);
+    setTimeout(()=>{
+      this.textContent='Sealed ✓';
+      $('#sendNote').innerHTML='Dispersed in one transaction · <b>0x8f3a…c210</b>. Amounts encrypted; declared total committed publicly. Switch to <b>Verify</b> to see the honest-payout proof.';
+      toast('Distribution sealed — one confidential disperse');
+    },1900);
+    setTimeout(()=>{this.disabled=false;this.textContent='Seal & disperse';},4200);
+  });
+
+  // ---- CLAIM: sign to decrypt ----
+  $('#signDecrypt').addEventListener('click',function(){
+    if($('#claimSlot').classList.contains('open')) return;
+    this.textContent='Signing (EIP-712)…'; this.disabled=true;
+    setTimeout(()=>{
+      $('#claimSlot').classList.add('open');
+      this.textContent='Decrypted ✓';
+      $('#claimNote').innerHTML='Session key cached — future decrypts need <b>no signature</b>. Now disclose a fact →';
+      $('#proveCard').style.opacity='1'; $('#proveCard').style.pointerEvents='auto';
+      toast('Allocation decrypted — visible only to you');
+    },1050);
+  });
+
+  // ---- PROVE: pick predicate ----
+  let pred='ge';
+  $$('#opts .opt').forEach(o=>o.addEventListener('click',()=>{
+    $$('#opts .opt').forEach(x=>x.classList.remove('sel')); o.classList.add('sel'); pred=o.dataset.p;
+  }));
+
+  const predText={
+    ge:[['allocation ≥ $2,000','TRUE']],
+    issuer:[['issued by verified fund','TRUE']],
+    both:[['allocation ≥ $2,000','TRUE'],['issued by verified fund','TRUE']]
+  };
+
+  $('#sealProof').addEventListener('click',()=>{
+    const who=$('#verifier').value||'the verifier';
+    $('#proofFor').textContent='Disclosure · to '+who;
+    $('#predList').innerHTML=predText[pred].map(p=>
+      `<div class="pred"><span>${p[0]}</span><span class="yes">→ ${p[1]}</span></div>`).join('');
+    $('#proofOut').style.display='block';
+    const st=$('#stamp'); st.classList.remove('hit'); void st.offsetWidth; st.classList.add('hit');
+    $('#proofOut').scrollIntoView({behavior:'smooth',block:'center'});
+    setTimeout(()=>toast('Proof sealed — amount never disclosed'),480);
+  });
+
+  $('#copyProof').addEventListener('click',function(){
+    this.textContent='Link copied ✓';
+    setTimeout(()=>this.textContent='Copy shareable link',1600);
+    toast('signet.app/p/0x9c…a4e2 — verifiable, no amount inside');
+  });
+</script>
+</body>
+</html>
