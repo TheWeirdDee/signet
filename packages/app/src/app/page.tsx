@@ -35,7 +35,6 @@ export default function Landing() {
       </header>
 
       <section className="hero">
-        <Guilloche />
         <div className="wrap hero-grid">
           <Reveal>
             <div>
@@ -72,7 +71,12 @@ export default function Landing() {
             </div>
           </Reveal>
           <Reveal delay={0.15} y={26}>
-            <HeroReceipt />
+            {/* the rosette is anchored to the receipt so the card always sits
+                dead-center on it, at every viewport width */}
+            <div className="hero-receipt-wrap">
+              <Guilloche cxFrac={0.5} cyFrac={0.5} maskAt="50% 50%" />
+              <HeroReceipt />
+            </div>
           </Reveal>
         </div>
       </section>

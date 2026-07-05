@@ -832,6 +832,16 @@ table.ledger {
   position: relative;
   z-index: 2;
 }
+.hero-receipt-wrap {
+  position: relative;
+}
+.hero-receipt-wrap .guilloche {
+  inset: -120px;
+}
+.hero-receipt-wrap .receipt {
+  position: relative;
+  z-index: 2;
+}
 .hero-grid {
   display: grid;
   grid-template-columns: 1.15fr 0.85fr;

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="48" fill="#8A2A3B"/>
+  <circle cx="50" cy="50" r="46" fill="none" stroke="#6E1F2E" stroke-width="2"/>
+  <circle cx="50" cy="50" r="38" fill="none" stroke="#9C7C3C" stroke-width="1.5" opacity=".85"/>
+  <circle cx="50" cy="50" r="33" fill="none" stroke="#6E1F2E" stroke-width="1" opacity=".7"/>
+  <text x="50" y="67" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="48" fill="#E7E3D6">S</text>
+</svg>

@@ -6,8 +6,21 @@ import { useEffect, useRef } from "react";
  * Guilloché rosette — anti-counterfeit linework, ported from the landing spec.
  * Hypotrochoid family drawn as SVG paths; stroke-draw animation unless the
  * user prefers reduced motion.
+ *
+ * `cxFrac`/`cyFrac` place the rosette center within the drawing (fractions of
+ * width/height); `maskAt` positions the radial fade. Defaults match the
+ * original full-hero placement; pass 0.5/0.5 + "50% 50%" to center it behind
+ * a card.
  */
-export function Guilloche() {
+export function Guilloche({
+  cxFrac = 0.72,
+  cyFrac = 0.42,
+  maskAt,
+}: {
+  cxFrac?: number;
+  cyFrac?: number;
+  maskAt?: string;
+}) {
   const host = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -16,8 +29,8 @@ export function Guilloche() {
 
     const W = 1080,
       H = 720,
-      cx = W * 0.72,
-      cy = H * 0.42;
+      cx = W * cxFrac,
+      cy = H * cyFrac;
     const NS = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(NS, "svg");
     svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
@@ -72,7 +85,15 @@ export function Guilloche() {
       svg.appendChild(c);
     });
     el.appendChild(svg);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return <div className="guilloche" ref={host} aria-hidden="true" />;
+  const maskStyle = maskAt
+    ? ({
+        WebkitMaskImage: `radial-gradient(circle at ${maskAt}, #000 0%, transparent 62%)`,
+        maskImage: `radial-gradient(circle at ${maskAt}, #000 0%, transparent 62%)`,
+      } as React.CSSProperties)
+    : undefined;
+
+  return <div className="guilloche" ref={host} aria-hidden="true" style={maskStyle} />;
 }
