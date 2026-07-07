@@ -87,7 +87,7 @@ sequenceDiagram
     Verifier->>Contract: Query proof (reads result handle + verifier ACL)
     Verifier->>KMS: Decrypt request (signed EIP-712 once per session)
     KMS->>Verifier: Decrypted boolean (TRUE/FALSE)
-    Note over Verifier: Verifier learns if threshold is met; raw amount remains sealed
+    Note over Verifier: Verifier learns if threshold is met, raw amount remains sealed
 ```
 
 1. Your allocation is the disperse's own encrypted handle. Only you (and the operator, who chose the amount) hold decryption rights.
