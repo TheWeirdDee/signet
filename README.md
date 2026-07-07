@@ -30,11 +30,65 @@ The whole UI is one surface viewed through three lenses — same onchain data, t
 | **Claim** | recipient | only their own slice — one EIP-712 signature lifts the redaction bar; then **Prove**: mint a selective-disclosure proof to any verifier |
 | **Verify** | public | the aggregate: N recipients, *declared total = distributed total* proven under encryption, every individual row redacted |
 
+```mermaid
+graph TD
+    classDef operator fill:#8A2A3B,stroke:#17231C,color:#E7E3D6;
+    classDef recipient fill:#9C7C3C,stroke:#17231C,color:#E7E3D6;
+    classDef verifier fill:#17231C,stroke:#17231C,color:#E7E3D6;
+    classDef state fill:#E7E3D6,stroke:#17231C,color:#17231C;
+
+    subgraph Operator ["Operator (Send Lens)"]
+        A[Input Recipient List] --> B[Confidential Disperse]
+        B --> C[Register Distribution + Sum Proof]
+    end
+
+    subgraph Recipient ["Recipient (Claim & Prove Lens)"]
+        D[Discover Allocation] --> E[Sign EIP-712 Once]
+        E --> F[Reveal Redacted Balance]
+        F --> G[Select Fact to Prove: allocation >= threshold]
+        G --> H[Seal Proof onchain]
+    end
+
+    subgraph PublicVerifier ["Public/Verifier (Verify Lens)"]
+        I[Verify Public Ledger: Redacted Rows] --> J[Verify Sum Proof: Declared = Distributed]
+        K[Open Shareable Proof Link /p/proofId] --> L[Verify Verified Issuer Attestation]
+        L --> M[Decrypt Proof Verdict: TRUE/FALSE]
+    end
+
+    class A,B,C operator;
+    class D,E,F,G,H recipient;
+    class I,J,K,L,M verifier;
+    
+    C -. Encrypted euint64 balance .-> D;
+    H -. Scoped ebool verdict .-> M;
+```
+
 A wallet-free **demo mode** (`/app?demo=true`) reproduces the full flow on mocked data through the *same components* — no parallel UI.
 
 ## How the selective disclosure works (the differentiator)
 
 The amount sits in a sealed box (an encrypted `euint64` under the Zama ACL). Most confidential apps only let you open your own box to peek. Signet lets you **ask a question of the box without opening it** — and hand the yes/no to whoever's asking:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Recipient
+    actor Verifier
+    participant Contract as SignetDistributor
+    participant KMS as Zama KMS Gateway
+
+    Note over Recipient, Contract: Recipient allocation is stored as encrypted euint64 (Zama ACL)
+    Recipient->>Contract: proveAtLeast(distId, threshold, verifierAddress)
+    Note over Contract: Contract runs FHE.ge(allocation, threshold) on ciphertext
+    Note over Contract: Generates encrypted ebool (result)
+    Note over Contract: Contract executes FHE.allow(result, verifier) and FHE.allow(result, recipient)
+    Contract-->>Recipient: ProofIssued event (result handle)
+    Recipient->>Verifier: Share proof link /p/proofId
+    Verifier->>Contract: Query proof (reads result handle + verifier ACL)
+    Verifier->>KMS: Decrypt request (signed EIP-712 once per session)
+    KMS->>Verifier: Decrypted boolean (TRUE/FALSE)
+    Note over Verifier: Verifier learns if threshold is met; raw amount remains sealed
+```
 
 1. Your allocation is the disperse's own encrypted handle. Only you (and the operator, who chose the amount) hold decryption rights.
 2. To prove "≥ $2,000", `SignetDistributor.proveAtLeast` computes `FHE.ge(allocation, threshold)` **on the ciphertext**, producing an encrypted boolean.
@@ -42,6 +96,7 @@ The amount sits in a sealed box (an encrypted `euint64` under the Zama ACL). Mos
 4. The proof carries the fund's onchain attestation (issuer registry), so it can't be minted by an impostor — the anti-forgery a PDF receipt lacks.
 
 Anyone opening a shared `/p/<proofId>` link sees every fact **read live from the chain**: the threshold, the issuer's verified status (resolved `proofId → distId → verifiedIssuer`), and a provenance check that the receipt handle appears verbatim in the disperse transaction — nothing is taken on the sharer's word.
+
 
 ## Architecture — two layers, kept separate
 
