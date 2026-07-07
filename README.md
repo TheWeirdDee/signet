@@ -191,12 +191,13 @@ The Sepolia decrypt UX is honest about physics: real KMS user-decryptions take ~
 
 - **One FHE client interface, two backends.** Locally, `@fhevm/mock-utils` builds a `MockFhevmInstance` from the hardhat node's `fhevm_relayer_metadata` RPC (its heavyweight relayer-SDK import is aliased to a ~150-line pure-JS shim, validated byte-for-byte against the real verifier). On Sepolia, the real `@zama-fhe/relayer-sdk` web build is **self-hosted**: pre-bundled by esbuild into `public/zama/` at `prebuild` and dynamic-imported at runtime, because Zama's CDN no longer serves 0.4.x and the WASM/worker graph breaks Next's bundlers.
 - **No unbounded `getLogs`.** Real RPCs reject block-range scans from 0. Claim discovers allocations by direct `hasAllocation` reads; Verify derives the roster from the disperse transaction's receipt (single lookup by hash) and cross-checks against `allocationOf` state.
-- **The TokenOps ACL reconnaissance** that shaped the architecture (which handles are disclosable, to whom, and why `transferred` handles aren't) came from reading the verified `DisperseConfidential` source — the write-up lives in the git history of this repo's milestone reports.
+- **The TokenOps ACL reconnaissance** that shaped the architecture (which handles are disclosable, to whom, and why `transferred` handles aren't) came from reading the verified `DisperseConfidential` source — the write-up lives in the git history of this repo's milestone reports. My full developer feedback on the SDK is documented in [TOKENOPS-SDK-FEEDBACK.md](TOKENOPS-SDK-FEEDBACK.md).
 - **Wallets:** every EIP-6963 injected provider is enumerated and the user picks — no auto-select.
 
 ## Bounty compliance checklist
 
 - ✅ Settlement via `@tokenops/sdk` (confidential disperse, direct mode) — the SDK is the only settlement path on Sepolia
+- ✅ TokenOps SDK developer feedback report compiled in [TOKENOPS-SDK-FEEDBACK.md](TOKENOPS-SDK-FEEDBACK.md)
 - ✅ ERC-7984 confidential token (`@openzeppelin/confidential-contracts`)
 - ✅ Deployed on Sepolia; smart contracts + frontend both implemented
 - ✅ Recipients verify + decrypt their own allocation (one EIP-712 signature, session-cached)
